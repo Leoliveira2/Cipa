@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lousa CIPA - Linha do Tempo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #34495e;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="date"] {
+      padding: 8px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #27ae60;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2ecc71;
+    }
+
+    #results {
+      margin-top: 30px;
+      display: none;
+    }
+
+    #results ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    #results li {
+      background: #ecf0f1;
+      margin: 12px 0;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 5px solid #2980b9;
+      position: relative;
+    }
+
+    #results li::before {
+      content: "📌";
+      position: absolute;
+      left: -32px;
+      top: 15px;
+      font-size: 20px;
+    }
+
+    .stage-name {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .date-info {
+      float: right;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+      background: #3498db;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-left: 10px;
+    }
+
+    .referencia {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lousa - Cronograma Eleitoral da CIPA</h1>
+  </header>
+
+  <main>
+    <h2>Informe a data de término do mandato atual</h2>
+    <label for="endDate">Data de término:</label>
+    <input type="date" id="endDate">
+    <br>
+    <button id="calculateBtn">Gerar Linha do Tempo</button>
+
+    <div id="results">
+      <h2>📅 Linha do Tempo</h2>
+      <ul></ul>
+    </div>
+  </main>
+
+  <script>
+    const calculateBtn = document.getElementById('calculateBtn');
+    const endDateInput = document.getElementById('endDate');
+    const resultsDiv = document.getElementById('results');
+    const resultsList = resultsDiv.querySelector('ul');
+
+    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+    function formatDate(date) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const dayOfWeek = dayNames[date.getDay()];
+      return `${day}/${month}/${year} (${dayOfWeek})`;
+    }
+
+    // Ajuste para pular final de semana (sábados e domingos)
+    function ajustarParaDiaUtil(date) {
+      while (date.getDay() === 0 || date.getDay() === 6) { // 0 = Domingo, 6 = Sábado
+        date.setDate(date.getDate() + 1);
+      }
+      return date;
+    }
+
+    function addTimelineItem(stage, date, referencia) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="stage-name">${stage}</span>
+        <span class="date-info">${formatDate(date)}</span>
+        <span class="referencia">${referencia}</span>
+      `;
+      resultsList.appendChild(li);
+    }
+
+    calculateBtn.addEventListener('click', () => {
+      const endDateString = endDateInput.value;
+
+      if (!endDateString) {
+        alert('Por favor, selecione a data de vencimento do mandato atual.');
+        return;
+      }
+
+      const endDate = new Date(endDateString + 'T00:00:00');
+      resultsList.innerHTML = '';
+      resultsDiv.style.display = 'block';
+
+      // 1. Convocação das eleições (60 dias antes do término - NR-05 5.5.1)
+      const convocacao = new Date(endDate);
+      convocacao.setDate(convocacao.getDate() - 60);
+      ajustarParaDiaUtil(convocacao);
+      addTimelineItem('Convocação das eleições (NR-05, 5.5.1)', new Date(convocacao), 'Convocação: pelo menos 60 dias antes do fim do mandato - NR-05, 5.5.1');
+
+      // 2. Publicação do Edital/Inscrições (45 dias antes do término - NR-05 5.5.3.a, 5.6.4.1)
+      const edital = new Date(endDate);
+      edital.setDate(edital.getDate() - 45);
+      ajustarParaDiaUtil(edital);
+      addTimelineItem('Publicação do Edital/Início das Inscrições (NR-05, 5.5.3.a, 5.6.4.1)', new Date(edital), 'Edital: mínimo 45 dias antes do fim do mandato - NR-05, 5.5.3.a, 5.6.4.1');
+
+      // 3. Encerramento das Inscrições (mínimo 15 dias corridos após o edital - NR-05 5.5.3.b)
+      const inscricoesFim = new Date(edital);
+      inscricoesFim.setDate(inscricoesFim.getDate() + 15);
+      ajustarParaDiaUtil(inscricoesFim);
+      addTimelineItem('Encerramento das Inscrições (NR-05, 5.5.3.b)', new Date(inscricoesFim), 'Inscrições: mínimo de 15 dias corridos - NR-05, 5.5.3.b');
+
+      // 4. Data da Eleição (mínimo 30 dias antes do fim - NR-05 5.5.3.f)
+      const eleicao = new Date(endDate);
+      eleicao.setDate(eleicao.getDate() - 30);
+      ajustarParaDiaUtil(eleicao);
+      addTimelineItem('Eleição (NR-05, 5.5.3.f)', new Date(eleicao), 'Eleição: mínimo 30 dias antes do fim do mandato - NR-05, 5.5.3.f');
+
+      // 5. Posse (primeiro dia útil subsequente ao fim do mandato - NR-05 5.4.7)
+      const posse = new Date(endDate);
+      posse.setDate(posse.getDate() + 1);
+      ajustarParaDiaUtil(posse);
+      addTimelineItem('Posse (NR-05, 5.4.7)', new Date(posse), 'Posse: primeiro dia útil após fim do mandato - NR-05, 5.4.7');
+
+      // 6. Fim do Mandato Atual
+      addTimelineItem('Fim do Mandato Atual', endDate, 'Término do mandato atual');
+    });
+  </script>
+</body>
+</html>
