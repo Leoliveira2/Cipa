@@ -130,19 +130,24 @@
   </main>
 
   <script>
-    const calculateBtn = document.getElementById('calculateBtn');
-    const endDateInput = document.getElementById('endDate');
-    const resultsDiv = document.getElementById('results');
-    const resultsList = resultsDiv.querySelector('ul');
+    var calculateBtn = document.getElementById('calculateBtn');
+    var endDateInput = document.getElementById('endDate');
+    var resultsDiv = document.getElementById('results');
+    var resultsUlCollection = resultsDiv.getElementsByTagName('ul');
+    var resultsList = resultsUlCollection.length > 0 ? resultsUlCollection[0] : null;
 
-    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    var dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+    function pad2(v) {
+      return ('0' + v).slice(-2);
+    }
 
     function formatDate(date) {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const dayOfWeek = dayNames[date.getDay()];
-      return `${day}/${month}/${year} (${dayOfWeek})`;
+      var day = pad2(date.getDate());
+      var month = pad2(date.getMonth() + 1);
+      var year = date.getFullYear();
+      var dayOfWeek = dayNames[date.getDay()];
+      return day + '/' + month + '/' + year + ' (' + dayOfWeek + ')';
     }
 
     // Ajuste para pular final de semana (sábados e domingos)
@@ -154,53 +159,124 @@
     }
 
     function addTimelineItem(stage, date, referencia) {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <span class="stage-name">${stage}</span>
-        <span class="date-info">${formatDate(date)}</span>
-        <span class="referencia">${referencia}</span>
-      `;
+      if (!resultsList) {
+        return;
+      }
+
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="stage-name">' + stage + '</span>' +
+        '<span class="date-info">' + formatDate(date) + '</span>' +
+        '<span class="referencia">' + referencia + '</span>';
       resultsList.appendChild(li);
     }
 
-    calculateBtn.addEventListener('click', () => {
-      const endDateString = endDateInput.value;
+    function parseInputDate(value) {
+      if (!value) {
+        return null;
+      }
 
-      if (!endDateString) {
+      var parts;
+      var year;
+      var month;
+      var day;
+
+      if (value.indexOf('-') !== -1) {
+        parts = value.split('-');
+        if (parts.length === 3) {
+          year = parseInt(parts[0], 10);
+          month = parseInt(parts[1], 10);
+          day = parseInt(parts[2], 10);
+          if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+            return new Date(year, month - 1, day);
+          }
+        }
+      }
+
+      if (value.indexOf('/') !== -1) {
+        parts = value.split('/');
+        if (parts.length === 3) {
+          var first = parseInt(parts[0], 10);
+          var second = parseInt(parts[1], 10);
+          var third = parseInt(parts[2], 10);
+
+          if (!isNaN(first) && !isNaN(second) && !isNaN(third)) {
+            if (first > 12) {
+              day = first;
+              month = second;
+            } else if (second > 12) {
+              day = second;
+              month = first;
+            } else {
+              day = first;
+              month = second;
+            }
+            year = third;
+            return new Date(year, month - 1, day);
+          }
+        }
+      }
+
+      var parsed = new Date(value);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+
+      return null;
+    }
+
+    function bindClick(element, handler) {
+      if (element.addEventListener) {
+        element.addEventListener('click', handler);
+      } else if (element.attachEvent) {
+        element.attachEvent('onclick', handler);
+      } else {
+        element.onclick = handler;
+      }
+    }
+
+    bindClick(calculateBtn, function () {
+      var endDateString = endDateInput.value;
+
+      var endDate = parseInputDate(endDateString);
+
+      if (!endDate) {
         alert('Por favor, selecione a data de vencimento do mandato atual.');
         return;
       }
 
-      const endDate = new Date(endDateString + 'T00:00:00');
-      resultsList.innerHTML = '';
-      resultsDiv.style.display = 'block';
+      if (resultsList) {
+        resultsList.innerHTML = '';
+      }
+      if (resultsDiv) {
+        resultsDiv.style.display = 'block';
+      }
 
       // 1. Convocação das eleições (60 dias antes do término - NR-05 5.5.1)
-      const convocacao = new Date(endDate);
+      var convocacao = new Date(endDate);
       convocacao.setDate(convocacao.getDate() - 60);
       ajustarParaDiaUtil(convocacao);
       addTimelineItem('Convocação das eleições (NR-05, 5.5.1)', new Date(convocacao), 'Convocação: pelo menos 60 dias antes do fim do mandato - NR-05, 5.5.1');
 
       // 2. Publicação do Edital/Inscrições (45 dias antes do término - NR-05 5.5.3.a, 5.6.4.1)
-      const edital = new Date(endDate);
+      var edital = new Date(endDate);
       edital.setDate(edital.getDate() - 45);
       ajustarParaDiaUtil(edital);
       addTimelineItem('Publicação do Edital/Início das Inscrições (NR-05, 5.5.3.a, 5.6.4.1)', new Date(edital), 'Edital: mínimo 45 dias antes do fim do mandato - NR-05, 5.5.3.a, 5.6.4.1');
 
       // 3. Encerramento das Inscrições (mínimo 15 dias corridos após o edital - NR-05 5.5.3.b)
-      const inscricoesFim = new Date(edital);
+      var inscricoesFim = new Date(edital);
       inscricoesFim.setDate(inscricoesFim.getDate() + 15);
       ajustarParaDiaUtil(inscricoesFim);
       addTimelineItem('Encerramento das Inscrições (NR-05, 5.5.3.b)', new Date(inscricoesFim), 'Inscrições: mínimo de 15 dias corridos - NR-05, 5.5.3.b');
 
       // 4. Data da Eleição (mínimo 30 dias antes do fim - NR-05 5.5.3.f)
-      const eleicao = new Date(endDate);
+      var eleicao = new Date(endDate);
       eleicao.setDate(eleicao.getDate() - 30);
       ajustarParaDiaUtil(eleicao);
       addTimelineItem('Eleição (NR-05, 5.5.3.f)', new Date(eleicao), 'Eleição: mínimo 30 dias antes do fim do mandato - NR-05, 5.5.3.f');
 
       // 5. Posse (primeiro dia útil subsequente ao fim do mandato - NR-05 5.4.7)
-      const posse = new Date(endDate);
+      var posse = new Date(endDate);
       posse.setDate(posse.getDate() + 1);
       ajustarParaDiaUtil(posse);
       addTimelineItem('Posse (NR-05, 5.4.7)', new Date(posse), 'Posse: primeiro dia útil após fim do mandato - NR-05, 5.4.7');
