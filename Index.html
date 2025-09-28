@@ -1,131 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Lousa CIPA - Linha do Tempo</title>
+  <meta charset="UTF-8" />
+  <title>Lousa CIPA - Linha do Tempo (NR-05)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f6fa;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg:#f5f6fa; --card:#fff; --ink:#2c3e50; --muted:#34495e; --pill:#3498db;
+      --accent:#27ae60; --accent2:#2ecc71; --item:#ecf0f1; --bar:#2980b9;
     }
-
-    header {
-      background: #2c3e50;
-      color: white;
-      text-align: center;
-      padding: 20px;
+    *{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);margin:0}
+    header{background:var(--ink);color:#fff;text-align:center;padding:20px}
+    main{
+      max-width:900px;margin:30px auto;background:var(--card);border-radius:12px;
+      padding:22px;box-shadow:0 6px 20px rgba(0,0,0,.08)
     }
-
-    main {
-      max-width: 800px;
-      margin: 30px auto;
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    h1,h2{margin:0 0 16px}
+    h2{color:var(--muted);text-align:center}
+    label{font-weight:700}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+    input[type="date"]{
+      padding:10px;font-size:16px;border:1px solid #ccd;border-radius:8px
     }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #34495e;
+    button{
+      padding:12px 18px;background:var(--accent);border:0;color:#fff;border-radius:8px;
+      font-size:16px;cursor:pointer
     }
-
-    label {
-      font-weight: bold;
+    button:hover{background:var(--accent2)}
+    #results{margin-top:26px;display:none}
+    #results ul{list-style:none;padding:0;margin:0}
+    #results li{
+      background:var(--item);margin:14px 0;padding:16px 16px 14px;border-radius:10px;
+      border-left:6px solid var(--bar);position:relative
     }
-
-    input[type="date"] {
-      padding: 8px;
-      font-size: 16px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    #results li::before{
+      content:"📌";position:absolute;left:-30px;top:14px;font-size:20px
     }
-
-    button {
-      padding: 10px 20px;
-      background: #27ae60;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
+    .stage-name{font-weight:800;color:var(--ink)}
+    .date-info{
+      float:right;font-size:14px;font-weight:700;background:var(--pill);
+      color:#fff;padding:6px 12px;border-radius:20px;margin-left:10px
     }
-
-    button:hover {
-      background: #2ecc71;
+    .hint{display:block;font-size:12px;color:#555;margin-top:6px;line-height:1.35}
+    .warn{
+      margin-top:14px;background:#fff3cd;border:1px solid #ffe29a;color:#7a5b00;
+      padding:10px 12px;border-radius:8px;font-size:14px
     }
-
-    #results {
-      margin-top: 30px;
-      display: none;
+    footer{
+      margin-top:24px;font-size:12px;color:#666;display:flex;gap:8px;flex-wrap:wrap;
+      align-items:center;justify-content:space-between
     }
-
-    #results ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    #results li {
-      background: #ecf0f1;
-      margin: 12px 0;
-      padding: 15px;
-      border-radius: 6px;
-      border-left: 5px solid #2980b9;
-      position: relative;
-    }
-
-    #results li::before {
-      content: "📌";
-      position: absolute;
-      left: -32px;
-      top: 15px;
-      font-size: 20px;
-    }
-
-    .stage-name {
-      font-weight: bold;
-      color: #2c3e50;
-    }
-
-    .date-info {
-      float: right;
-      font-size: 16px;
-      font-weight: bold;
-      color: #2c3e50;
-      background: #3498db;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-left: 10px;
-    }
-
-    .referencia {
-      display: block;
-      font-size: 13px;
-      color: #555;
-      margin-top: 5px;
-    }
+    .badge{background:#eef3ff;color:#234;padding:6px 10px;border-radius:999px;font-weight:700}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:700px){.grid{grid-template-columns:1fr}}
+    .pill{display:inline-block;background:#eef3ff;color:#234;padding:4px 10px;border-radius:999px;font-size:12px;margin-left:6px}
   </style>
 </head>
 <body>
   <header>
-    <h1>Lousa - Cronograma Eleitoral da CIPA</h1>
+    <h1>Lousa – Cronograma Eleitoral da CIPA (NR-05)</h1>
   </header>
 
   <main>
     <h2>Informe a data de término do mandato atual</h2>
-    <label for="endDate">Data de término:</label>
-    <input type="date" id="endDate">
-    <br>
-    <button id="calculateBtn">Gerar Linha do Tempo</button>
+    <div class="row">
+      <div>
+        <label for="endDate">Data de término:</label><br/>
+        <input type="date" id="endDate" aria-label="Data de término do mandato atual">
+      </div>
+      <button id="calculateBtn" aria-label="Gerar Linha do Tempo">Gerar Linha do Tempo</button>
+    </div>
 
     <div id="results">
       <h2>📅 Linha do Tempo</h2>
+      <div id="alerts"></div>
       <ul></ul>
+
+      <footer>
+        <div class="badge">Base legal: NR-05 (itens 5.4.7; 5.5.1; 5.5.3 a–b, f–g)</div>
+        <div>Este cronograma auxilia a gestão e <b>não substitui</b> a leitura integral da NR-05.</div>
+      </footer>
     </div>
   </main>
 
@@ -134,79 +89,135 @@
     const endDateInput = document.getElementById('endDate');
     const resultsDiv = document.getElementById('results');
     const resultsList = resultsDiv.querySelector('ul');
+    const alertsDiv = document.getElementById('alerts');
 
-    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const dayNames = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 
-    function formatDate(date) {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const dayOfWeek = dayNames[date.getDay()];
-      return `${day}/${month}/${year} (${dayOfWeek})`;
+    function formatDate(date){
+      const d = String(date.getDate()).padStart(2,'0');
+      const m = String(date.getMonth()+1).padStart(2,'0');
+      const y = date.getFullYear();
+      const dow = dayNames[date.getDay()];
+      return `${d}/${m}/${y} (${dow})`;
+    }
+    function clone(d){ return new Date(d.getTime()); }
+    function isWeekend(d){ const g=d.getDay(); return g===0 || g===6; }
+
+    // Ajustes de DIA ÚTIL apenas quando a NR exige:
+    function toBusinessDayBackward(d){
+      const x = clone(d);
+      while(isWeekend(x)) x.setDate(x.getDate()-1);
+      return x;
+    }
+    function toBusinessDayForward(d){
+      const x = clone(d);
+      while(isWeekend(x)) x.setDate(x.getDate()+1);
+      return x;
     }
 
-    // Ajuste para pular final de semana (sábados e domingos)
-    function ajustarParaDiaUtil(date) {
-      while (date.getDay() === 0 || date.getDay() === 6) { // 0 = Domingo, 6 = Sábado
-        date.setDate(date.getDate() + 1);
-      }
-      return date;
-    }
-
-    function addTimelineItem(stage, date, referencia) {
+    function addItem(stage, date, hint){
       const li = document.createElement('li');
       li.innerHTML = `
         <span class="stage-name">${stage}</span>
         <span class="date-info">${formatDate(date)}</span>
-        <span class="referencia">${referencia}</span>
+        ${hint ? `<span class="hint">${hint}</span>` : ``}
       `;
       resultsList.appendChild(li);
     }
 
-    calculateBtn.addEventListener('click', () => {
-      const endDateString = endDateInput.value;
+    function addWarning(msg){
+      const div = document.createElement('div');
+      div.className = 'warn';
+      div.textContent = msg;
+      alertsDiv.appendChild(div);
+    }
 
-      if (!endDateString) {
-        alert('Por favor, selecione a data de vencimento do mandato atual.');
+    calculateBtn.addEventListener('click', () => {
+      alertsDiv.innerHTML = '';
+      resultsList.innerHTML = '';
+      const endDateStr = endDateInput.value;
+
+      if(!endDateStr){
+        alert('Por favor, selecione a data de término do mandato atual.');
         return;
       }
 
-      const endDate = new Date(endDateString + 'T00:00:00');
-      resultsList.innerHTML = '';
+      // Data de término do mandato (00:00 local)
+      const endDate = new Date(endDateStr + 'T00:00:00');
+
+      // Validação simples: se término já passou, alertar
+      const today = new Date(); today.setHours(0,0,0,0);
+      if(endDate < today){
+        addWarning('Atenção: a data de término informada já passou. Reveja o período do mandato.');
+      }
+
+      // 1) CONVOCAÇÃO (NR-05 5.5.1): mínimo 60 dias antes do término.
+      // Não ajustamos para dia útil (a NR não exige dia útil para convocação).
+      const convocacao = clone(endDate);
+      convocacao.setDate(convocacao.getDate() - 60);
+
+      // 2) ELEIÇÃO (NR-05 5.5.3 f, g): mínimo 30 dias antes do término + em dia normal de trabalho.
+      let eleicaoBase = clone(endDate);
+      eleicaoBase.setDate(eleicaoBase.getDate() - 30);
+      const eleicao = toBusinessDayBackward(eleicaoBase); // garante dia útil sem diminuir o intervalo mínimo
+
+      // 3) EDITAL + ABERTURA DE INSCRIÇÕES (NR-05 5.5.3 a–b):
+      // Período mínimo de 15 dias corridos. Para não "inventar" prazos,
+      // definimos a data MAIS TARDIA possível que ainda cumpre o mínimo de 15 dias antes da eleição.
+      let inscricoesInicio = clone(eleicao);
+      inscricoesInicio.setDate(inscricoesInicio.getDate() - 15); // janela mínima de 15 dias corridos
+      // A NR não exige dia útil para abrir inscrições/publicar edital, então não ajustamos automaticamente.
+
+      // Encerramento das inscrições: "mínimo 15 dias corridos".
+      // Para representar 15 dias corridos completos, mostramos de Início até Início+14 (15 dias incluindo o 1º dia).
+      let inscricoesFim = clone(inscricoesInicio);
+      inscricoesFim.setDate(inscricoesFim.getDate() + 14);
+
+      // Checagens de consistência (avisos, sem mudar prazos legais):
+      if(eleicao < convocacao){
+        addWarning('Atenção: a data de eleição caiu antes da convocação calculada. Verifique a data de término.');
+      }
+      if(inscricoesFim >= eleicao){
+        addWarning('Atenção: o encerramento mínimo das inscrições coincide/ultrapassa a data de eleição. Considere abrir inscrições antes para publicar a relação de inscritos (NR-05 5.5.3 e) com antecedência adequada.');
+      }
+
       resultsDiv.style.display = 'block';
 
-      // 1. Convocação das eleições (60 dias antes do término - NR-05 5.5.1)
-      const convocacao = new Date(endDate);
-      convocacao.setDate(convocacao.getDate() - 60);
-      ajustarParaDiaUtil(convocacao);
-      addTimelineItem('Convocação das eleições (NR-05, 5.5.1)', new Date(convocacao), 'Convocação: pelo menos 60 dias antes do fim do mandato - NR-05, 5.5.1');
+      // Itens
+      addItem(
+        'Convocação das eleições (NR-05, 5.5.1)',
+        convocacao,
+        'Convocar eleições com antecedência mínima de 60 dias em relação ao término do mandato.'
+      );
 
-      // 2. Publicação do Edital/Inscrições (45 dias antes do término - NR-05 5.5.3.a, 5.6.4.1)
-      const edital = new Date(endDate);
-      edital.setDate(edital.getDate() - 45);
-      ajustarParaDiaUtil(edital);
-      addTimelineItem('Publicação do Edital/Início das Inscrições (NR-05, 5.5.3.a, 5.6.4.1)', new Date(edital), 'Edital: mínimo 45 dias antes do fim do mandato - NR-05, 5.5.3.a, 5.6.4.1');
+      addItem(
+        'Publicação do edital e abertura das inscrições (NR-05, 5.5.3 a–b)',
+        inscricoesInicio,
+        'Inscrição com período mínimo de 15 dias corridos. Esta é a data mais tardia possível para ainda cumprir o mínimo antes da eleição.'
+      );
 
-      // 3. Encerramento das Inscrições (mínimo 15 dias corridos após o edital - NR-05 5.5.3.b)
-      const inscricoesFim = new Date(edital);
-      inscricoesFim.setDate(inscricoesFim.getDate() + 15);
-      ajustarParaDiaUtil(inscricoesFim);
-      addTimelineItem('Encerramento das Inscrições (NR-05, 5.5.3.b)', new Date(inscricoesFim), 'Inscrições: mínimo de 15 dias corridos - NR-05, 5.5.3.b');
+      addItem(
+        'Período mínimo de inscrições (NR-05, 5.5.3 b)',
+        inscricoesInicio,
+        `Janela mínima: ${formatDate(inscricoesInicio)} a ${formatDate(inscricoesFim)} (15 dias corridos).`
+      );
 
-      // 4. Data da Eleição (mínimo 30 dias antes do fim - NR-05 5.5.3.f)
-      const eleicao = new Date(endDate);
-      eleicao.setDate(eleicao.getDate() - 30);
-      ajustarParaDiaUtil(eleicao);
-      addTimelineItem('Eleição (NR-05, 5.5.3.f)', new Date(eleicao), 'Eleição: mínimo 30 dias antes do fim do mandato - NR-05, 5.5.3.f');
+      addItem(
+        'Eleição (NR-05, 5.5.3 f, g)',
+        eleicao,
+        'Deve ocorrer com antecedência mínima de 30 dias em relação ao término e em dia normal de trabalho.'
+      );
 
-      // 5. Posse (primeiro dia útil subsequente ao fim do mandato - NR-05 5.4.7)
-      const posse = new Date(endDate);
-      posse.setDate(posse.getDate() + 1);
-      ajustarParaDiaUtil(posse);
-      addTimelineItem('Posse (NR-05, 5.4.7)', new Date(posse), 'Posse: primeiro dia útil após fim do mandato - NR-05, 5.4.7');
+      // 4) POSSE (NR-05 5.4.7): 1º dia útil após o término
+      const posse = toBusinessDayForward(new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()+1));
+      addItem(
+        'Posse (NR-05, 5.4.7)',
+        posse,
+        'Empossar os membros no primeiro dia útil após o término do mandato anterior.'
+      );
 
-      // 6. Fim do Mandato Atual
-      addTimelineItem('Fim do Mandato Atual', endDate, 'Término do mandato atual');
+      // 5) Fim do Mandato Atual (informativo)
+      addItem('Fim do mandato atual', endDate, 'Data de término informada.');
     });
   </script>
 </body>
